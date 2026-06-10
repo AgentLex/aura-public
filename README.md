@@ -42,6 +42,21 @@ flag — fundamentally different from a firmware-based security check.
 - Chinese Invention Patent No. 2026106956971
 - PCT 5-country filing in progress (CN/US/EU/JP/KR)
 
+## Getting Started
+
+AURA is available for technical evaluation under NDA.
+
+**For FPGA evaluation (Artix-7 / Basys 3):**
+Contact us to receive the FPGA Starter Kit:
+RTL interface definitions + integration documentation + simulation scripts
+
+**For ASIC integration:**
+Engage 3–6 months before tape-out.
+Full RTL package + synthesis constraints + timing reports provided under NDA.
+
+**For certification support (SESIP L2 / ISO 21434):**
+Certification documentation package available upon request.
+
 ## Contact
 
 Technical review available under NDA.  
