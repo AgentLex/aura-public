@@ -1,12 +1,13 @@
 <div align="center">
 
-# AURA — Raíz de Confianza Hardware
+# AURA — Raíz de Confianza en Hardware
 
-**182 GE · Defensa SCA de 4 capas · CMOS estándar / FPGA**
+**182 GE (Base) · ~300 GE reforzado SCA · Defensa de 4 capas SCA · CMOS estándar / FPGA**
 
-[![Patente](https://img.shields.io/badge/Patente-CN%202026106956971-blue.svg)](https://github.com/AgentLex/aura-public)
+[![Patente](https://img.shields.io/badge/Patente-CN%20Solicitada%20×2-blue.svg)](https://github.com/AgentLex/aura-public)
 [![Simulación](https://img.shields.io/badge/Simulación-22%2F22%20PASS-brightgreen.svg)](./docs/)
-[![Huella](https://img.shields.io/badge/Huella-182%20GE-gold.svg)](./docs/synthesis_report.png)
+[![Base HRoT](https://img.shields.io/badge/Base%20HRoT-182%20GE-gold.svg)](./docs/synthesis_report.png)
+[![SCA Reforzado](https://img.shields.io/badge/SCA%20Reforzado-~300%20GE-orange.svg)](./docs/arch_system_overview.png)
 
 ---
 
@@ -20,19 +21,21 @@
 
 ## El Problema
 
-Las pérdidas anuales por clonación de chips ascienden a **$42.000 millones** en todo el mundo. La mayoría de los chips actuales autentican en el firmware — quien controla el software, controla la identidad del chip.
+**42.000 millones de dólares** en pérdidas anuales por clonación de chips. La mayoría de los chips actuales autentican en la capa de firmware — quien controla el software, controla la identidad del chip.
 
-Las soluciones existentes no caben donde más se necesitan:
+Las soluciones existentes no caben donde el problema es más grave:
 
-| Solución | Compuertas | Embebible en MCU/IoT | Anti-DPA | Anti-SEU |
+| Solución | Puertas Lógicas | Embebible en MCU/IoT | Anti-DPA | Anti-SEU |
 |---|---|---|---|---|
 | TPM 2.0 | ~50.000 GE | ✗ Demasiado grande | ✗ | ✗ |
-| ARM TrustZone | Overhead SW | Parcial | ✗ | ✗ |
-| PUF | ~10.000 GE | Parcial | ✗ | ✗ |
-| **AURA** | **182 GE** | **✓ Totalmente compatible** | **✓ 4 capas** | **✓ L2 Dual-Rail** |
+| ARM TrustZone | Sobrecarga SW | Parcial | ✗ | ✗ |
+| PUF solo | ~10.000 GE | Parcial | ✗ | ✗ |
+| **AURA (Base)** | **182 GE** | **✓ Totalmente compatible** | **✓ 4 capas** | **✓ L2 Dual-Rail** |
+| **AURA (SCA Reforzado)** | **~280–320 GE** | **✓ Totalmente compatible** | **✓ 4 capas activas** | **✓ L2 Dual-Rail** |
 
-> Una implementación hardware de AES-128 requiere ~**2.400 GE**.  
-> AURA entrega enlace de identidad + protección anti-clonación + defensa SCA de 4 capas en **182 GE** — el 7,6% del área de AES-128 solo.
+> **Aclaración sobre puertas lógicas:** 182 GE = Base HRoT (FPGA, medido con Vivado: 46 LUT + 22 FF). ~280–320 GE = las cuatro capas SCA completamente activas (FPGA). Estimación ASIC @ 28nm: ~300–500 GE.
+>
+> Una implementación hardware mínima de AES-128 requiere ~2.400 GE. Incluso la versión AURA reforzada con SCA ofrece vinculación de identidad + protección contra clonación + defensa SCA de 4 capas en solo el **13% del área de AES-128**.
 
 ---
 
@@ -41,38 +44,38 @@ Las soluciones existentes no caben donde más se necesitan:
 Codificación de estados ternarios sobre CMOS binario estándar — **sin proceso especial requerido**.
 
 ```
-2'b01  →  Legítimo · Pasa        Operación normal
-2'b10  →  Aislado · Protegido    Acceso no autorizado bloqueado permanentemente;
-                                  el propietario legítimo puede recuperar mediante credenciales
-2'b11  →  Ilegal · Alerta        Anomalía detectada / Evento SEU
+2'b01 → Legítimo · Pasa    Operación normal
+2'b10 → Aislado · Protegido    Acceso no autorizado bloqueado permanentemente; propietario autorizado puede recuperar
+2'b11 → Ilegal · Alerta    Anomalía detectada / Evento SEU
 ```
 
-> **Clave:** Una vez que `2'b10` entra en la cadena MAC, ninguna instrucción de software puede borrarlo.  
-> Es una restricción hardware — fundamentalmente diferente de una bandera firmware o un enum software.
+> **Clave:** Una vez que `2'b10` entra en la cadena MAC, ninguna instrucción de software puede borrarlo.
+> Es una restricción de hardware — fundamentalmente diferente de un flag de firmware o un enum de software.
 
 ---
 
-## Defensa SCA de 4 Capas
+## Defensa de 4 Capas SCA
 
 | Capa | Mecanismo | Defiende Contra |
 |---|---|---|
-| L1 | LFSR enmascarado | DPA — eleva complejidad O(2³²) → O(2⁴⁸) |
+| L1 | LFSR enmascarado | DPA — eleva la complejidad O(2³²) → O(2⁴⁸) |
 | L2 | Lógica Dual-Rail | DPA + Inyección de fallos + SEU (detección en 0 ciclos) |
-| L3 | MAC de tiempo constante | Canal lateral de temporización |
+| L3 | MAC en tiempo constante | Filtración por canal lateral de temporización |
 | L4 | Inserción de retardo aleatorio | Alineación de trazas DPA (~100× más difícil) |
 
-Las 4 capas operan completamente en RTL — **sin dependencia de firmware**.
+Las cuatro capas operan completamente en RTL — **sin dependencia de firmware**.
 
 ---
 
-## Cifras Clave
+## Datos Clave
 
 | Métrica | Valor |
 |---|---|
-| Conteo de compuertas | **182 GE** (Vivado 2023.2, Artix-7 35T: 46 LUT + 22 FF) |
-| Estimación ASIC | ~300–500 GE en 28nm |
-| Área de silicio | **< 0,002 mm²** @28nm |
-| Coste adicional por chip | **< $0,01** |
+| Área lógica — Base HRoT (FPGA) | **182 GE** (Vivado 2023.2, Artix-7 35T: 46 LUT + 22 FF) |
+| Área lógica — SCA reforzado (FPGA) | **~280–320 GE** (4 capas SCA activas) |
+| Estimación ASIC @ 28nm | **~300–500 GE** (SCA reforzado) |
+| Área de silicio @ 28nm | **< 0,003 mm²** (SCA reforzado) |
+| Coste adicional por chip | **< ¥0,1 / < $0,01** |
 | Consumo de energía | **< 1 mW** (vs. TPM 2.0: 5–15 mW) |
 | Simulación | **22/22 escenarios PASS** (Icarus Verilog) |
 | Módulos RTL | 9 completos |
@@ -84,64 +87,72 @@ Las 4 capas operan completamente en RTL — **sin dependencia de firmware**.
 <div align="center">
 
 ![Resultados de simulación](./docs/simulation_results.png)
-*22/22 escenarios de simulación — Verificación completa con Icarus Verilog*
+*22/22 escenarios de simulación — verificación completa con Icarus Verilog*
 
 ![Informe de síntesis](./docs/synthesis_report.png)
-*Síntesis Vivado 2023.2 en Xilinx Artix-7 35T: 46 LUT + 22 FF = 182 GE*
+*Síntesis Vivado 2023.2 en Xilinx Artix-7 35T: 46 LUT + 22 FF = 182 GE (Base HRoT)*
 
 ![Forma de onda](./docs/waveform_s1_s6.png)
-*GTKWave: Escenarios S1–S6 — Coincidencia total / Desviación leve / Media / Grave / Inyección de fallos / Recuperación*
+*GTKWave: escenarios S1–S6 — Coincidencia total / Desviación leve / Media / Grave / Inyección de fallo / Reinicio*
 
 </div>
 
 ---
 
-## Casos de Uso
+## Diagramas de Arquitectura
 
-**Cerraduras inteligentes / IoT de alta seguridad**  
-182 GE cabe en cualquier MCU de cerradura. EN 18031 de la UE obligatorio desde agosto de 2025. Compatible con certificación SESIP L2.
+<div align="center">
 
-**Automoción / ASIL-D / ISO 21434**  
-La defensa SCA de 4 capas cumple los requisitos hardware de ISO 21434. Penalización de área en silicio ECU: < 0,002 mm².
+![Arquitectura del sistema](./docs/arch_system_overview.png)
+*Defensa activa de 4 capas: Capa SCA → Aura 2 (Detección) → ESM (Decisión) → Aura 1 (Ejecución / HRoT)*
 
-**Controladores industriales / Electrónica de defensa**  
-Versión FPGA disponible hoy. El enlace de identidad previene la falsificación en la cadena de suministro.
+![Detalle de defensa SCA](./docs/arch_sca_defense.png)
+*Tipo de ataque → Mecanismo de defensa → Efecto de seguridad — las 4 capas SCA mapeadas*
+
+![Mecanismo de bloqueo persistente](./docs/arch_persistent_lock.png)
+*Comprobación al arrancar + flujo de escritura del bloqueo — el bloqueo sobrevive al ciclo de energía*
+
+![Codificación Dual-Rail](./docs/arch_dual_rail.png)
+*Carril único estándar (consumo varía = vulnerable a DPA) vs. Lógica Dual-Rail (consumo constante = DPA imposible)*
+
+</div>
 
 ---
 
-## Cómo Empezar
+## Vídeos de Demostración
 
-AURA está disponible para evaluación técnica bajo NDA.
+*Grabaciones en vivo en FPGA Artix-7 35T — subiéndose a GitHub Releases próximamente. ⭐ Dale Star para recibir notificaciones.*
 
-**Evaluación FPGA (Artix-7 / Basys 3)**
-```
-Contáctenos → Firme NDA → Reciba FPGA Starter Kit:
-Definiciones de interfaz RTL + documentación de integración + scripts de simulación
-Evaluación típica: 2–4 semanas
-```
+| # | Escenario | Descripción | Enlace |
+|---|---|---|---|
+| 01 | Autenticación normal | Credencial correcta → autenticación exitosa | 🔜 Próximamente |
+| 02 | Fuerza bruta → bloqueo | 3 fallos → bloqueo hardware irreversible | 🔜 Próximamente |
+| 03 | Persistencia tras corte de luz | El bloqueo persiste tras apagar/encender | 🔜 Próximamente |
+| 04 | Desbloqueo y recuperación | Credencial autorizada → operación restaurada | 🔜 Próximamente |
+| 05 | Ataque de repetición bloqueado | Token reutilizado → detectado y rechazado | 🔜 Próximamente |
+| 06 | Escalada de privilegios bloqueada | Salto de estado no autorizado → barrera hardware | 🔜 Próximamente |
+| 00 | Demo completa | Los 7 escenarios — demostración completa | 🔜 Próximamente |
 
-**Integración ASIC**
-```
-Contacte 3–6 meses antes del tape-out
-Paquete RTL completo + restricciones de síntesis + informes de temporización bajo NDA
-Documentación para certificación SESIP L2 / ISO 21434 incluida
-```
+> Grabado en hardware real con salida serie UART a 115200 baudios. No es simulación.
 
 ---
 
 ## Propiedad Intelectual
 
-- 🇨🇳 **Patente de invención china** — Solicitud N.º 2026106956971 (presentada mayo 2026)
-- 🌍 **Solicitud PCT en 5 países** en curso — CN / EE.UU. / UE / JP / KR
+- 🇨🇳 **Patente de invención china** — Solicitud No. **202610850983.0** (presentada en 2026)
+- 🇨🇳 **Patente de invención china** — Solicitud No. **2026106956971** (presentada en mayo de 2026)
+- 🌍 **Presentación PCT en 5 países** en curso — CN / EE.UU. / UE / JP / KR
+
+> Código fuente RTL completo, restricciones de síntesis y términos de licencia de IP disponibles bajo NDA.
 
 ---
 
 ## Contacto
 
-**Shanghai Opti Aura Technology Co., Ltd. / OptiAura Tech**
+**OptiAura Tech — 超矩阵（上海）高科技有限公司**
 
-📩 lexxu@optiaura.tech  
-🌐 optiaura.tech  
+📩 lexxu@optiaura.tech
+🌐 optiaura.tech
 👤 [Lex Xu en LinkedIn](https://www.linkedin.com/in/lex-xu-optiaura/)
 
-> *Revisión completa del código RTL disponible tras firma de NDA. Soporte de ingenieros de integración incluido.*
+> *Revisión completa del código RTL disponible tras la firma del NDA. Ingenieros de integración disponibles durante todo el proceso.*
