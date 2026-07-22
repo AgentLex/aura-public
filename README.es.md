@@ -149,7 +149,7 @@ Las cuatro capas operan completamente en RTL — **sin dependencia de firmware**
 
 ## Contacto
 
-**OptiAura Tech — 超矩阵（上海）高科技有限公司**
+**OptiAura Tech — 上海若爻高科技有限公司**
 
 📩 lexxu@optiaura.tech
 🌐 optiaura.tech
