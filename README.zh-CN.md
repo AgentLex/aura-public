@@ -182,7 +182,7 @@ NDA后提供完整RTL代码包 + 综合约束 + 时序报告
 
 ## 联系方式
 
-**OptiAura Tech — 超矩阵（上海）高科技有限公司**
+**OptiAura Tech — 上海若爻高科技有限公司**
 
 📩 lexxu@optiaura.tech
 🌐 optiaura.tech
