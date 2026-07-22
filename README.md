@@ -183,7 +183,7 @@ SESIP L2 / ISO 21434 certification documentation included
 
 ## Contact
 
-**OptiAura Tech — 超矩阵（上海）高科技有限公司**
+**OptiAura Tech — 上海若爻高科技有限公司**
 
 📩 lexxu@optiaura.tech
 🌐 optiaura.tech
