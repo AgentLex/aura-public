@@ -1,0 +1,74 @@
+PROPRIETARY LICENSE — ALL RIGHTS RESERVED
+专有许可协议 — 保留所有权利
+
+Copyright (c) 2026 OptiAura Tech / 上海若爻高科技有限公司
+All rights reserved. 保留所有权利。
+
+================================================================
+ENGLISH
+================================================================
+
+This repository and all of its contents — including but not limited to
+documentation, diagrams, technical specifications, performance data, and
+any referenced RTL source code — are the proprietary and confidential
+property of OptiAura Tech (Shanghai Ruoyao High Technology Co., Ltd.).
+
+NOT OPEN SOURCE. This repository is publicly visible for informational
+and evaluation purposes only. Public visibility does NOT grant any
+open-source license or any right of use.
+
+The following are expressly PROHIBITED without prior written
+authorization from the copyright holder:
+
+  1. Copying, reproducing, or redistributing any part of this material
+  2. Creating derivative works or modifications
+  3. Commercial use of any kind
+  4. Reverse engineering of any disclosed design or mechanism
+  5. Incorporating the described techniques into any product, silicon,
+     FPGA bitstream, or IP core
+
+PATENT NOTICE
+The technologies described herein are protected by filed invention
+patents in the People's Republic of China (Application Nos.
+202610850983.0 and 2026106956971), with PCT filings in progress across
+CN / US / EU / JP / KR. Patent rights are enforced independently of
+this notice.
+
+TECHNICAL EVALUATION
+Full RTL source code, synthesis constraints, timing reports, and
+integration documentation are available exclusively under a signed
+Non-Disclosure Agreement (NDA). Contact lexxu@optiaura.tech.
+
+================================================================
+简体中文
+================================================================
+
+本仓库及其全部内容——包括但不限于文档、架构图、技术规格、性能数据，
+以及所引用的任何 RTL 源代码——均为 OptiAura Tech（上海若爻高科技有限
+公司）的专有及保密财产。
+
+本项目非开源项目。本仓库公开可见仅为信息展示与技术评估之目的，
+公开可见不构成任何开源授权，亦不授予任何使用权利。
+
+未经著作权人事先书面授权，明确禁止以下行为：
+
+  1. 复制、翻录或再分发本材料的任何部分
+  2. 制作衍生作品或进行修改
+  3. 任何形式的商业使用
+  4. 对所披露的设计或机制进行逆向工程
+  5. 将所述技术并入任何产品、芯片、FPGA 比特流或 IP 核
+
+专利声明
+本文所述技术已在中华人民共和国申请发明专利保护（申请号
+202610850983.0 及 2026106956971），并正在中 / 美 / 欧 / 日 / 韩
+五国推进 PCT 布局。专利权的行使独立于本声明。
+
+技术评估
+完整 RTL 源代码、综合约束、时序报告及集成文档，仅在签署保密协议
+（NDA）后提供。联系方式：lexxu@optiaura.tech
+
+================================================================
+
+OptiAura Tech — 上海若爻高科技有限公司
+Email: lexxu@optiaura.tech
+Web:   https://optiaura.tech
