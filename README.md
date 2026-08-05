@@ -1,14 +1,13 @@
 <div align="center">
 
-# AURA — Hardware Root of Trust
+# AURA — Compact Hardware Root of Trust
 
-**182 GE (Base) · ~300 GE SCA-hardened · Four-Layer SCA Defense · Standard CMOS / FPGA**
+**182 GE (Base) · ~300 GE SCA-hardened · Silicon-level identity binding · Standard CMOS / FPGA**
 
-[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](./LICENSE)
-[![Patent](https://img.shields.io/badge/Patent-CN%20Filed%20×2-blue.svg)](https://github.com/AgentLex/aura-public)
+[![Patent](https://img.shields.io/badge/Patent-CN%20Filed%20%C3%972-blue.svg)](https://github.com/AgentLex/aura-public)
 [![Simulation](https://img.shields.io/badge/Simulation-22%2F22%20PASS-brightgreen.svg)](./docs/)
-[![GE Base](https://img.shields.io/badge/Base%20HRoT-182%20GE-gold.svg)](./docs/synthesis_report.png)
-[![GE SCA](https://img.shields.io/badge/SCA--hardened-~300%20GE-orange.svg)](./docs/arch_system_overview.png)
+[![Base HRoT](https://img.shields.io/badge/Base%20HRoT-182%20GE-gold.svg)](./docs/synthesis_report.png)
+[![SCA-hardened](https://img.shields.io/badge/SCA--hardened-~300%20GE-orange.svg)](./docs/arch_system_overview.png)
 
 ---
 
@@ -22,171 +21,126 @@
 
 ## The Problem
 
-$42B in annual chip cloning losses. Most chips today authenticate in firmware — which means anyone who controls the software controls the chip's identity.
+Most embedded devices authenticate in firmware. Whoever controls the software controls the device's identity. For FPGA-based industrial equipment and cost-sensitive IoT endpoints, board-level cloning is a persistent commercial problem, and the available countermeasures are unsatisfying:
 
-Existing solutions don't fit where the problem is worst:
+- **Bitstream encryption** on mainstream FPGA families has published side-channel weaknesses.
+- **External authentication chips** are cheap but vulnerable to man-in-the-middle interposition on the bus.
+- **Full security subsystems** (TPM, secure elements, commercial RoT IP) are architected — and priced — for high-assurance silicon. They do not fit the area, power, or licensing budget of the devices where cloning actually happens.
 
-| Solution | Gate Count | Embeddable in MCU/IoT? | Anti-DPA? | Anti-SEU? |
-|---|---|---|---|---|
-| TPM 2.0 | ~50,000 GE | ✗ Too large | ✗ | ✗ |
-| ARM TrustZone | SW overhead | Partial | ✗ | ✗ |
-| PUF alone | ~10,000 GE | Partial | ✗ | ✗ |
-| **AURA (Base)** | **182 GE** | **✓ Full fit** | **✓ 4 layers** | **✓ L2 Dual-Rail** |
-| **AURA (SCA-hardened)** | **~280–320 GE** | **✓ Full fit** | **✓ 4 layers active** | **✓ L2 Dual-Rail** |
+AURA targets that gap: identity binding placed in the logic fabric itself, at a footprint small enough to sit alongside the application.
 
-> **Gate count clarification:** 182 GE = Base HRoT (FPGA, Vivado measured: 46 LUT + 22 FF). ~280–320 GE = all four SCA layers fully active (FPGA). ASIC estimate @ 28nm: ~300–500 GE.
->
-> A standalone AES-128 hardware implementation requires ~2,400 GE. Even the SCA-hardened AURA delivers full identity binding + clone protection + 4-layer SCA defense at **13% of AES-128 alone**.
+## What AURA Is — and Is Not
 
----
+AURA is an **identity and state anchor**, not a cryptographic engine and not a TPM replacement.
+
+**It provides:** device identity binding, clone detection, a hardware-enforced isolation state that software cannot clear, and SEU anomaly detection.
+
+**It does not provide:** general-purpose encryption, key storage at secure-element assurance levels, a certified crypto library, or Common Criteria assurance today.
+
+Positioning against adjacent technologies:
+
+| | Footprint | Fits in MCU / small FPGA | Primary function |
+|---|---|---|---|
+| TPM 2.0 | ~50,000 GE | ✗ | Full security subsystem |
+| Commercial RoT IP (tRoot, RT-series, PUFrt class) | thousands of GE | Partial | Boot integrity + key management |
+| PUF macro alone | ~10,000 GE | Partial | Unclonable key source |
+| Standalone authentication chip | external part | ✓ | Challenge–response auth (bus-exposed) |
+| **AURA (Base)** | **182 GE** | **✓** | **Identity binding + isolation state** |
+| **AURA (SCA-hardened)** | **~280–320 GE** | **✓** | **Same, with side-channel hardening** |
+
+This table compares footprint and fit, not equivalent functionality. AURA occupies a different tier: it is not competing with a TPM on assurance, it is addressing designs where a TPM was never an option.
+
+**Gate count basis:** 182 GE = Base HRoT, measured on FPGA (Vivado 2023.2, Artix-7 35T: 46 LUT + 22 FF). ~280–320 GE = all four SCA layers active (FPGA). ASIC estimate @ 28 nm: ~300–500 GE — estimate, not silicon-measured.
 
 ## Core Mechanism
 
-Ternary-state encoding over standard binary CMOS — **no special process required**.
+Ternary-state encoding over standard binary CMOS — no special process required.
 
-```
-2'b01 → Legitimate · Pass   Normal operation
-2'b10 → Isolated · Protected   Unauthorized access blocked; authorized owner may recover
-2'b11 → Illegal · Alert   Anomaly detected / SEU event
-```
-
-> **Key insight:** Once `2'b10` enters the MAC chain, no software instruction can clear it.
-> This is a hardware constraint — fundamentally different from a firmware flag or software enum.
-
----
-
-## Four-Layer SCA Defense
-
-| Layer | Mechanism | Defends Against |
+| State | Meaning | Behaviour |
 |---|---|---|
-| L1 | Masked LFSR | DPA — lifts complexity O(2³²) → O(2⁴⁸) |
-| L2 | Dual-Rail Logic | DPA + Fault Injection + SEU (0-cycle detection) |
-| L3 | Constant-Time MAC | Timing side-channel leakage |
-| L4 | Random Delay Insertion | DPA trace alignment (~100× harder) |
+| `2'b01` | Legitimate | Normal operation |
+| `2'b10` | **Isolated** | Access blocked; **authorized owner can recover via credential verification** |
+| `2'b11` | Illegal / Alert | Anomaly or SEU event detected |
 
-All four layers operate entirely in RTL — **no firmware dependency**.
+**Key property:** once `2'b10` enters the MAC chain, no software instruction can clear it. Recovery requires credential verification through a hardware-defined path.
 
----
+**This is deliberate, and it is not a brick.** For the product owner, an isolation event is a serviceable condition with a defined recovery procedure — and a recoverable one, which means it can be operated as a support workflow rather than an RMA. For an attacker holding a cloned unit, there is no software path back.
+
+## Four-Layer Side-Channel Hardening
+
+| Layer | Mechanism | Target |
+|---|---|---|
+| L1 | Masked LFSR | Differential power analysis |
+| L2 | Dual-rail logic | DPA, fault injection, SEU (0-cycle detection) |
+| L3 | Constant-time MAC | Timing side channels |
+| L4 | Random delay insertion | DPA trace alignment |
+
+All four layers operate in RTL — no firmware dependency.
+
+> **Verification status.** These mechanisms are implemented and functionally verified in simulation. **Physical side-channel evaluation (TVLA, per ISO/IEC 17825) is in progress.** Until that data is published here, no claim of measured attack resistance should be considered validated. We would rather state this plainly than have an evaluator discover it.
 
 ## By the Numbers
 
-| Metric | Value |
-|---|---|
-| Gate count — Base HRoT (FPGA) | **182 GE** (Vivado 2023.2, Artix-7 35T: 46 LUT + 22 FF) |
-| Gate count — SCA-hardened (FPGA) | **~280–320 GE** (all 4 SCA layers active) |
-| ASIC estimate @ 28nm | **~300–500 GE** (SCA-hardened) |
-| Silicon area @ 28nm | **< 0.003 mm²** (SCA-hardened) |
-| Per-chip cost addition | **< ¥0.1 / < $0.01** |
-| Power consumption | **< 1 mW** (vs. TPM 2.0: 5–15 mW) |
-| Simulation | **22/22 scenarios PASS** (Icarus Verilog) |
-| RTL modules | 9 complete |
+| Metric | Value | Basis |
+|---|---|---|
+| Gate count — Base HRoT (FPGA) | 182 GE (46 LUT + 22 FF) | Measured, Vivado 2023.2, Artix-7 35T |
+| Gate count — SCA-hardened (FPGA) | ~280–320 GE | Measured |
+| ASIC @ 28 nm | ~300–500 GE | Estimate |
+| Silicon area @ 28 nm | < 0.003 mm² | Estimate |
+| Power | < 1 mW | Estimate |
+| Functional simulation | 22/22 scenarios PASS | Icarus Verilog |
+| RTL modules | 9 complete | — |
+| Physical SCA (TVLA) | In progress | — |
 
----
+## Validation Artifacts
 
-## Validation
+- 22/22 functional simulation scenarios — Icarus Verilog
+- Vivado 2023.2 synthesis on Artix-7 35T — see [`docs/synthesis_report.png`](./docs/synthesis_report.png)
+- GTKWave traces, scenarios S1–S6 — see [`docs/waveform_s1_s6.png`](./docs/waveform_s1_s6.png)
 
-<div align="center">
+## Architecture
 
-![Simulation Results](./docs/simulation_results.png)
-*22/22 simulation scenarios — Icarus Verilog full-stack verification*
+- System overview — SCA Defense Layer → Aura 2 (sense) → ESM (decide) → Aura 1 (execute)
+- Attack type → defense mechanism → security effect mapping
+- Power-on boot check and isolation-state write flow — state survives power cycling
+- Single-rail vs. dual-rail power profile comparison
 
-![Synthesis Report](./docs/synthesis_report.png)
-*Vivado 2023.2 synthesis on Xilinx Artix-7 35T: 46 LUT + 22 FF = 182 GE (Base HRoT)*
+See [`docs/`](./docs/).
 
-![Waveform](./docs/waveform_s1_s6.png)
-*GTKWave: S1–S6 core scenarios — Full match / Light deviation / Medium / Heavy / Fault injection / Reset*
+## Hardware Demonstration
 
-</div>
+Live recordings on Artix-7 35T covering normal authentication, repeated-failure isolation, power-cycle persistence, authorized recovery, replay rejection, and privilege-escalation blocking. Recorded on real hardware with UART output at 115200 baud — not simulation.
 
----
+Publishing to GitHub Releases. ⭐ Star to be notified.
 
-## Architecture Diagrams
+## Who This Is For
 
-<div align="center">
+**FPGA-based equipment manufacturers** — industrial controllers, instrumentation, medical and test equipment facing board-level cloning. Deployable on existing hardware today; no respin required. This is our nearest-term focus.
 
-![System Architecture](./docs/arch_system_overview.png)
-*Four-layer active defense: SCA Defense Layer → Aura 2 (Sense) → ESM (Decide) → Aura 1 (Execute / HRoT)*
+**IoT and embedded silicon** — smart locks and high-security endpoints where a full security subsystem does not fit the area or power budget. EU EN 18031 became applicable under the Radio Equipment Directive in August 2025; SESIP L2 is a supported certification path.
 
-![SCA Defense Detail](./docs/arch_sca_defense.png)
-*Attack type → Defense mechanism → Security effect — all 4 SCA layers mapped*
+**Automotive** — 4-layer SCA hardening addresses ISO 21434 hardware prerequisites, at a small area penalty on ECU silicon. Longer qualification cycle; engaged as a strategic path rather than a near-term one.
 
-![Persistent Lock Mechanism](./docs/arch_persistent_lock.png)
-*Power-on boot check + lock-trigger write flow — lockdown survives power cycling*
-
-![Dual-Rail Encoding](./docs/arch_dual_rail.png)
-*Standard single-rail (power varies = DPA vulnerable) vs. Dual-Rail Logic (constant power = DPA impossible)*
-
-</div>
-
----
-
-## Demo Videos
-
-*Live FPGA recordings on Artix-7 35T — uploading to GitHub Releases soon. ⭐ Star to get notified.*
-
-| # | Scenario | Description | Link |
-|---|---|---|---|
-| 01 | Normal Auth | Correct credential → authenticated pass | 🔜 Coming soon |
-| 02 | Brute-Force Lockdown | 3 failures → irreversible hardware lockdown | 🔜 Coming soon |
-| 03 | Power-Cycle Persistence | Lockdown survives full power-off / power-on | 🔜 Coming soon |
-| 04 | Unlock & Recovery | Authorized credential → restored operation | 🔜 Coming soon |
-| 05 | Replay Attack Blocked | Reused token → detected and rejected | 🔜 Coming soon |
-| 06 | Privilege Escalation Blocked | Unauthorized state jump → hardware barrier | 🔜 Coming soon |
-| 00 | Full Demo | All 7 scenarios — complete walkthrough | 🔜 Coming soon |
-
-> Recorded live on real hardware with UART serial output at 115200 baud. Not simulation.
-
----
-
-## Use Cases
-
-**Smart Locks / High-Security IoT**
-182 GE fits inside any lock MCU. EU EN 18031 mandatory from Aug 2025. SESIP L2 certification path supported.
-
-**Automotive / ASIL-D / ISO 21434**
-4-layer SCA defense meets ISO 21434 hardware prerequisites. < 0.003 mm² area penalty on ECU silicon.
-
-**Industrial Controllers / Defense Electronics**
-FPGA version available today. Identity binding prevents supply chain counterfeiting.
-
----
+**RISC-V SoC projects** — AMBA APB integration wrapper under development.
 
 ## Getting Started
 
-AURA is available for technical evaluation under NDA.
+**FPGA evaluation (Artix-7 / Basys 3)** — contact us → NDA → evaluation package: RTL interface definitions, integration docs, simulation scripts. Typical evaluation: 2–4 weeks.
 
-**FPGA Evaluation (Artix-7 / Basys 3)**
-```
-Contact us → Sign NDA → Receive FPGA Starter Kit:
-RTL interface definitions + integration docs + simulation scripts
-Typical evaluation: 2–4 weeks
-```
+**ASIC integration** — engage 3–6 months before tape-out. Full RTL package, synthesis constraints, and timing reports provided under NDA.
 
-**ASIC Integration**
-```
-Engage 3–6 months before tape-out
-Full RTL package + synthesis constraints + timing reports provided under NDA
-SESIP L2 / ISO 21434 certification documentation included
-```
+## Intellectual Property
 
----
+- Chinese invention patent application No. 202610850983.0 (filed 2026)
+- Chinese invention patent application No. 202610695697.1 (filed May 2026)
+- PCT filing in progress — CN / US / EU / JP / KR
 
-## IP Protection
-
-- 🇨🇳 **Chinese Invention Patent** — Application No. **202610850983.0** (filed 2026)
-- 🇨🇳 **Chinese Invention Patent** — Application No. **2026106956971** (filed May 2026)
-- 🌍 **PCT 5-country filing** in progress — CN / US / EU / JP / KR
-
-> Full RTL source code review, synthesis constraints, and IP licensing terms available under NDA.
-
----
+Source in this repository is published for technical evaluation only. Commercial use requires a separate written license. See [LICENSE](./LICENSE).
 
 ## Contact
 
-**OptiAura Tech — 上海若爻高科技有限公司**
+**OptiAura Tech**
 
-📩 lexxu@optiaura.tech
-🌐 optiaura.tech
-👤 [Lex Xu on LinkedIn](https://www.linkedin.com/in/lex-xu-optiaura/)
+📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/)
 
-> *Full RTL code review available after NDA. Integration engineers supported throughout.*
+Full RTL review available under NDA. Integration engineering support provided throughout evaluation.
