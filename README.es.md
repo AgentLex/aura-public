@@ -132,15 +132,15 @@ En preparación para publicarse en GitHub Releases. ⭐ Marca con estrella para 
 ## Propiedad intelectual
 
 - Solicitud de patente de invención china n.º 202610850983.0 (presentada en 2026)
-- Solicitud de patente de invención china n.º 202610695697.1 (presentada en mayo de 2026)
+- Solicitud de patente de invención china n.º 2026106956971 (presentada en mayo de 2026)
 - Solicitud PCT en curso — CN / US / EU / JP / KR
 
 El código de este repositorio se publica únicamente para evaluación técnica. El uso comercial requiere licencia escrita independiente. Véase [LICENSE](./LICENSE).
 
 ## Contacto
 
-**OptiAura Tech**
+**OptiAura Tech** — 上海若爻高科技有限公司
 
-📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/)
+📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/in/lex-xu/)
 
 Revisión completa del RTL disponible bajo NDA. Soporte de ingeniería de integración durante toda la evaluación.

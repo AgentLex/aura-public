@@ -132,15 +132,15 @@ GitHub Releases で公開準備中です。⭐ Star で通知を受け取れま�
 ## 知的財産
 
 - 中国発明特許 出願番号 202610850983.0（2026 年出願）
-- 中国発明特許 出願番号 202610695697.1（2026 年 5 月出願）
+- 中国発明特許 出願番号 2026106956971（2026 年 5 月出願）
 - PCT 国際出願手続中 — CN / US / EU / JP / KR
 
 本リポジトリのソースは技術評価目的でのみ公開されています。商用利用には別途書面によるライセンスが必要です。[LICENSE](./LICENSE) をご参照ください。
 
 ## お問い合わせ
 
-**OptiAura Tech**
+**OptiAura Tech** — 上海若爻高科技有限公司
 
-📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/)
+📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/in/lex-xu/)
 
 NDA 締結後、RTL コードの全面レビューが可能です。評価期間を通じて統合エンジニアリング支援を提供します。

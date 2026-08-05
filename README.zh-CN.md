@@ -132,15 +132,15 @@ AURA 是**身份与状态锚点**，不是密码运算引擎，也不是 TPM 的
 ## 知识产权
 
 - 中国发明专利申请号 202610850983.0（2026 年申请）
-- 中国发明专利申请号 202610695697.1（2026 年 5 月申请）
+- 中国发明专利申请号 2026106956971（2026 年 5 月申请）
 - PCT 国际申请进行中 — CN / US / EU / JP / KR
 
 本仓库源码仅供技术评估。商业使用需另行取得书面授权。见 [LICENSE](./LICENSE)。
 
 ## 联系方式
 
-**OptiAura Tech**
+**OptiAura Tech** — 上海若爻高科技有限公司
 
-📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/)
+📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/in/lex-xu/)
 
 签署 NDA 后可提供完整 RTL 代码审阅，评估全程提供集成工程支持。

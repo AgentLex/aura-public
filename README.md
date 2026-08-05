@@ -132,15 +132,15 @@ Publishing to GitHub Releases. ⭐ Star to be notified.
 ## Intellectual Property
 
 - Chinese invention patent application No. 202610850983.0 (filed 2026)
-- Chinese invention patent application No. 202610695697.1 (filed May 2026)
+- Chinese invention patent application No. 2026106956971 (filed May 2026)
 - PCT filing in progress — CN / US / EU / JP / KR
 
 Source in this repository is published for technical evaluation only. Commercial use requires a separate written license. See [LICENSE](./LICENSE).
 
 ## Contact
 
-**OptiAura Tech**
+**OptiAura Tech** — 上海若爻高科技有限公司
 
-📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/)
+📩 lexxu@optiaura.tech · 🌐 optiaura.tech · 👤 [Lex Xu on LinkedIn](https://www.linkedin.com/in/lex-xu/)
 
 Full RTL review available under NDA. Integration engineering support provided throughout evaluation.
